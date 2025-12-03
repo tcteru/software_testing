@@ -11,10 +11,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "mocha": "^11.7.2",
-    "chai": "^6.0.1"
+    "mocha": "^11.7.5",
+    "chai": "^6.2.0"
   },
   "devDependencies": {
-    "nyc": "^14.1.1"
+    "nyc": "^17.1.0"
   }
 }
