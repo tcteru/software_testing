@@ -1,4 +1,4 @@
-name: Coverage
+ame: Coverage
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: "22.x"
           cache: "npm"
 
       - name: Install dependencies
@@ -30,16 +30,27 @@ jobs:
       - name: Run Jest with coverage
         run: npm run test:coverage
 
+      # Only start the app and run Cypress if there are Cypress specs
+      - name: Check for Cypress specs
+        id: specs
+        run: |
+          if [ -n "$(git ls-files 'cypress/e2e/**/*.cy.*' 2>/dev/null)" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Start app
+        if: steps.specs.outputs.found == 'true'
         run: |
           npm run start:app &
           npx wait-on http://localhost:5173
-        # Adjust start:app command and URL to match your project
 
       - name: Run Cypress (headless) with coverage
+        if: steps.specs.outputs.found == 'true'
         run: npx cypress run
 
-      - name: Merge Jest + Cypress coverage
+      - name: Merge Jest + Cypress coverage (works even if only Jest lcov exists)
         run: npx lcov-result-merger "coverage/**/*.lcov.info" "coverage/merged.lcov"
 
       - name: Upload coverage to Coveralls
