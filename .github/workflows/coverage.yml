@@ -21,16 +21,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20.x" # Tried different version
+          node-version: "20.x"
           cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (non-strict until lockfile is updated)
+        run: npm install --no-audit --no-fund
 
       - name: Run Jest with coverage
         run: npm run test:coverage
 
-      # Detect if Cypress is installed AND specs exist
       - name: Check for Cypress installation and specs
         id: cypress_check
         shell: bash
@@ -40,7 +39,6 @@ jobs:
           if npx --yes --no cypress version >/dev/null 2>&1; then
             HAS_CYPRESS="true"
           fi
-          # Look for committed spec files
           if ls cypress/e2e/*.cy.* >/dev/null 2>&1 || ls cypress/e2e/**/*.cy.* >/dev/null 2>&1; then
             HAS_SPECS="true"
           fi
@@ -51,36 +49,26 @@ jobs:
         if: steps.cypress_check.outputs.has_cypress == 'true' && steps.cypress_check.outputs.has_specs == 'true'
         run: |
           npm run start:app > app.log 2>&1 &
-          echo "Waiting for app…"
           npx --yes wait-on --timeout 60000 http://localhost:5173
-          echo "App started"
-        env:
-          CI: true
 
       - name: Show app log if start failed
         if: failure()
         run: |
-          echo "=== app.log (if present) ==="
           [ -f app.log ] && tail -n +1 app.log || echo "no app.log"
 
       - name: Run Cypress (headless) with coverage
         if: steps.cypress_check.outputs.has_cypress == 'true' && steps.cypress_check.outputs.has_specs == 'true'
         run: npx cypress run
 
-      # Merge coverage even if only Jest produced lcov
       - name: Merge Jest + Cypress coverage
         run: |
           npx lcov-result-merger "coverage/**/*.lcov.info" "coverage/merged.lcov" || {
             echo "Merge failed or only one lcov present; falling back to Jest lcov"
             cp coverage/jest/lcov.info coverage/merged.lcov
           }
-          ls -la coverage || true
-          ls -la coverage/jest || true
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage/merged.lcov
-          # For private repos, also set:
-          # coveralls-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
