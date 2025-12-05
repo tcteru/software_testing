@@ -25,7 +25,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies (non-strict until lockfile is updated)
-        run: npm install --no-audit --no-fund
+        run: npm install 
 
       - name: Run Jest with coverage
         run: npm run test:coverage
