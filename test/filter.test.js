@@ -1,6 +1,40 @@
 import filter from "../src/filter.js";
 
-describe("filter", () => {
+describe("filter (based on the phase 1 plan)", () => {
+
+  test("filters elements matching", () => {
+    expect(filter([
+                  {'item':'meat', 'sold':false},
+                  {'item': 'potato', 'sold': 'true'}
+                ],
+                 ({sold})=>sold)).toEqual(['potato']);
+  });
+
+  test("empty array", () => {
+    expect(filter([],
+                 ({sold})=>sold)).toEqual([[]]);
+  });
+
+  test("predicate empty", () => {
+    expect(filter([
+                {'item':'meat', 'sold':false},
+                {'item': 'potato', 'sold': 'true'}
+              ],
+                 ({})=>{})).toThrow();
+  });
+
+  test("functional content not in array", () => {
+    expect(filter([
+                {'item':'meat', 'sold':false},
+                {'item': 'potato', 'sold': 'true'}
+              ],
+                 ({reserved})=>reserved)).toEqual([[]]);
+  });
+});
+
+
+describe("filter AI implementation", () => {
+
   test("filters elements greater than 2", () => {
     expect(filter([1, 2, 3, 4], x => x > 2)).toEqual([3, 4]);
   });
@@ -37,4 +71,5 @@ describe("filter", () => {
   test("handles truthy/falsy values correctly", () => {
     expect(filter([0, 1, false, 2, "", 3], Boolean)).toEqual([1, 2, 3]);
   });
+
 });
