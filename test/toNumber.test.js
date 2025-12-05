@@ -8,7 +8,7 @@ describe("toNumber", () => {
   });
 
   test("parameter is symbol", () => {
-    expect(Number.isNan("a")).toBe(true);
+    expect(Number.isNaN(Symbol("a"))).toBe(true);
   });
 
   test("parameter is function", () => {
