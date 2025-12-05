@@ -21,4 +21,17 @@ describe("clamp", () => {
     // If implementation swaps internally:
     expect(clamp(5, 10, 1)).toBe(5);
   });
+
+  test("parameters ​​are string numbers", () => {
+    expect(clamp("5", 10, 1)).toBe("a");
+    expect(clamp(5, "10", 1)).toBe(5);
+    expect(clamp(5, 10, "1")).toBe(5);
+  });
+
+  test("parameters ​​are not numbers", () => {
+    expect(clamp("a", 10, 1)).toBe("a");
+    expect(clamp(5, "a", 1)).toBe(5);
+    expect(clamp(5, 10, "a")).toBe(5);
+  });
+
 });
