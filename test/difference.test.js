@@ -31,4 +31,10 @@ describe("difference", () => {
   test("works with strings", () => {
     expect(difference(["a", "b", "c"], ["b"])).toEqual(["a", "c"]);
   });
+
+  test("parameters not array", () => {
+    expect(difference("a", ["b"])).toEqual([]);
+    expect(difference(["a", "b", "c"], "b")).toEqual([]);
+  });
+
 });
