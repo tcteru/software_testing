@@ -17,7 +17,8 @@
     "coverageReporters": ["lcov", "text", "html"],
     "testEnvironment": "node",
     "testMatch": ["**/test/**/*.test.js"],
-    "extensionsToTreatAsEsm": [".js"]
+    "transform": {}
+
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.12.28",
@@ -28,4 +29,6 @@
     "vite": "^5.0.0",
     "vite-plugin-istanbul": "^4.0.2"
   }
+
 }
+
