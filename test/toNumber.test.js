@@ -1,5 +1,4 @@
 import toNumber from "../src/toNumber.js";
-
 describe('toNumber', () => {
   test('numbers remain numbers', () => {
     expect(toNumber(0)).toBe(0);
@@ -33,26 +32,33 @@ describe('toNumber', () => {
   });
 
   test('null and undefined conversion', () => {
-    // Implementation follows JS coercion: Number(null) === 0, Number(undefined) === NaN
     expect(toNumber(null)).toBe(0);
     expect(Number.isNaN(toNumber(undefined))).toBe(true);
   });
 
-  test('objects and arrays', () => {
-    // {} -> valueOf() callable => returns object; string path -> NaN
-    expect(Number.isNaN(toNumber({}))).toBe(true);
+  test('objects: valueOf is a function returning primitive number', () => {
+    const objZero = { valueOf: () => 0 };
+    expect(toNumber(objZero)).toBe(0); // exercises value === 0 ? value : +value
+    const objSeven = { valueOf: () => 7 };
+    expect(toNumber(objSeven)).toBe(7);
+  });
 
-    // { valueOf: () => 7 } -> 7
-    expect(toNumber({ valueOf: () => 7 })).toBe(7);
+  test('objects: valueOf is a function returning an object (forces string coercion)', () => {
+    const objNested = { valueOf: () => ({ a: 1 }) };
+    const result = toNumber(objNested); // becomes "[object Object]" -> +string => NaN
+    expect(Number.isNaN(result)).toBe(true);
+  });
 
-    // { toString: () => 'x' } -> still NaN via object path
-    expect(Number.isNaN(toNumber({ toString: () => 'x' }))).toBe(true);
+  test('objects: valueOf is not a function (falls back to value and string coercion)', () => {
+    const objNoFunc = { valueOf: 'not-a-function' };
+    const result = toNumber(objNoFunc); // becomes "[object Object]" -> +string => NaN
+    expect(Number.isNaN(result)).toBe(true);
+  });
 
-    // [] -> becomes '' via string coercion path -> +'' => 0
+  test('arrays', () => {
     expect(toNumber([])).toBe(0);
-
-    // ['1', '2'] -> "1,2" -> NaN
     expect(Number.isNaN(toNumber(['1', '2']))).toBe(true);
+    expect(toNumber([1])).toBe(1);
   });
 
   test('Date objects convert to their numeric timestamp', () => {
@@ -68,17 +74,8 @@ describe('toNumber', () => {
     expect(Number.isNaN(res)).toBe(true);
   });
 
-  test('BigInt may throw TypeError on unary plus (non-string path)', () => {
-    // In the current implementation, BigInt hits the non-string path and uses +value,
-    // which throws a TypeError in JS. Assert via try/catch to avoid failing the suite
-    // in environments where BigInt coercion is handled differently.
-    try {
-      const v = toNumber(1n);
-      // If environment converts, ensure result is numeric (unlikely in JS)
-      expect(typeof v).toBe('number');
-    } catch (e) {
-      expect(e).toBeInstanceOf(TypeError);
-    }
+  test('BigInt throws TypeError on unary plus in non-string path', () => {
+    expect(() => toNumber(1n)).toThrow(TypeError);
   });
 
   test('hex, binary, octal string literals', () => {
@@ -86,11 +83,9 @@ describe('toNumber', () => {
     expect(toNumber('0b101')).toBe(5);
     expect(toNumber('0o77')).toBe(63);
 
-    // bad signed hex -> NaN per reIsBadHex
     expect(Number.isNaN(toNumber('+0x1'))).toBe(true);
     expect(Number.isNaN(toNumber('-0x1'))).toBe(true);
 
-    // invalid digits should produce NaN via +value
     expect(Number.isNaN(toNumber('0xG1'))).toBe(true);
     expect(Number.isNaN(toNumber('0b102'))).toBe(true);
     expect(Number.isNaN(toNumber('0o8'))).toBe(true);
