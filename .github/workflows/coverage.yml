@@ -24,7 +24,7 @@ jobs:
           node-version: "20.x"
           cache: "npm"
 
-      - name: Install dependencies (non-strict until lockfile is updated)
+      - name: Install dependencies
         run: npm install 
 
       - name: Run Jest with coverage
