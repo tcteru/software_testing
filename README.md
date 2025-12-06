@@ -1,5 +1,5 @@
 # Student template
-[![Coverage Status](https://coveralls.io/repos/github/tcteru/software_testing/badge.svg)](https://coveralls.io/github/tcteru/software_testing)
+[![Coverage Status](https://coveralls.io/repos/github/tcteru/software_testing/badge.svg?branch=main)](https://coveralls.io/github/tcteru/software_testing?branch=main)
 ## Purpose of this repository
 
 This is a project template for students participating in Software Testing course
