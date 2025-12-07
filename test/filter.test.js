@@ -73,6 +73,7 @@ describe('filter', () => {
 
 
 describe("filter (Implemented by AI)", () => {
+  
   test('filters elements based on predicate (basic numbers)', () => {
     const arr = [1, 2, 3, 4, 5, 6];
     const result = filter(arr, (n) => n % 2 === 0);
@@ -112,36 +113,43 @@ describe("filter (Implemented by AI)", () => {
 
   test('does not mutate the input array', () => {
     const arr = [1, 2, 3];
-    const copy = arr.slice();
+    const snapshot = arr.slice();
     filter(arr, (n) => n > 1);
-    expect(arr).toEqual(copy);
+    expect(arr).toEqual(snapshot);
   });
 
   test('returns empty array when no elements match', () => {
     const arr = [1, 2, 3];
     const result = filter(arr, () => false);
-    // Bug in current implementation would return `[[]]`
+    // Your current implementation returns `[[]]` due to `const result = [[]]`
+    // These expectations will catch that bug.
     expect(result).toEqual([]);
   });
 
   test('handles empty array input', () => {
     const arr = [];
-    const predicate = jest.fn(() => true);
-    const result = filter(arr, predicate);
+    let called = 0;
+    const result = filter(arr, () => {
+      called += 1;
+      return true;
+    });
     expect(result).toEqual([]);
-    expect(predicate).not.toHaveBeenCalled(); // length 0 => no calls
+    expect(called).toBe(0); // length 0 => no calls
   });
 
   test('handles null/undefined array by returning empty array', () => {
-    const predicate = jest.fn(() => true);
+    let called = 0;
+    const predicate = () => {
+      called += 1;
+      return true;
+    };
 
     const resNull = filter(null, predicate);
-    expect(resNull).toEqual([]);
-    expect(predicate).not.toHaveBeenCalled();
-
     const resUndef = filter(undefined, predicate);
+
+    expect(resNull).toEqual([]);
     expect(resUndef).toEqual([]);
-    expect(predicate).not.toHaveBeenCalled();
+    expect(called).toBe(0);
   });
 
   test('works with sparse arrays (iterates by index/length)', () => {
@@ -160,5 +168,15 @@ describe("filter (Implemented by AI)", () => {
     const result = filter(arr, (n) => (n % 2 ? 'yes' : 0)); // truthy/falsey
     expect(result).toEqual([1, 3]);
   });
+
+  test('preserves -0 vs +0 when included by predicate (informative)', () => {
+    const arr = [0, -0, 1];
+    const result = filter(arr, () => true);
+    // Ensure both zeros are preserved and distinguishable
+    expect(result.length).toBe(3);
+    expect(Object.is(result[0], 0)).toBe(true);
+    expect(Object.is(result[1], -0)).toBe(true);
+  });
 });
+
 
