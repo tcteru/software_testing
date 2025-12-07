@@ -70,3 +70,95 @@ describe('filter', () => {
     expect(filter(undefined, () => true)).toEqual([]);
   });
 });
+
+
+describe("filter (Implemented by AI)", () => {
+  test('filters elements based on predicate (basic numbers)', () => {
+    const arr = [1, 2, 3, 4, 5, 6];
+    const result = filter(arr, (n) => n % 2 === 0);
+    expect(result).toEqual([2, 4, 6]);
+  });
+
+  test('example from JSDoc: filters objects by active=true', () => {
+    const users = [
+      { user: 'barney', active: true },
+      { user: 'fred', active: false },
+    ];
+    const result = filter(users, ({ active }) => active);
+    expect(result).toEqual([{ user: 'barney', active: true }]);
+  });
+
+  test('passes (value, index, array) to predicate', () => {
+    const arr = ['a', 'b', 'c'];
+    const seen = [];
+    const result = filter(arr, (value, index, array) => {
+      seen.push({ value, index, sameArray: array === arr });
+      return index % 2 === 0;
+    });
+    expect(result).toEqual(['a', 'c']);
+    expect(seen).toEqual([
+      { value: 'a', index: 0, sameArray: true },
+      { value: 'b', index: 1, sameArray: true },
+      { value: 'c', index: 2, sameArray: true },
+    ]);
+  });
+
+  test('returns a new array instance (does not return original reference)', () => {
+    const arr = [1, 2, 3];
+    const result = filter(arr, (n) => n > 0);
+    expect(result).toEqual([1, 2, 3]);
+    expect(result).not.toBe(arr);
+  });
+
+  test('does not mutate the input array', () => {
+    const arr = [1, 2, 3];
+    const copy = arr.slice();
+    filter(arr, (n) => n > 1);
+    expect(arr).toEqual(copy);
+  });
+
+  test('returns empty array when no elements match', () => {
+    const arr = [1, 2, 3];
+    const result = filter(arr, () => false);
+    // Bug in current implementation would return `[[]]`
+    expect(result).toEqual([]);
+  });
+
+  test('handles empty array input', () => {
+    const arr = [];
+    const predicate = jest.fn(() => true);
+    const result = filter(arr, predicate);
+    expect(result).toEqual([]);
+    expect(predicate).not.toHaveBeenCalled(); // length 0 => no calls
+  });
+
+  test('handles null/undefined array by returning empty array', () => {
+    const predicate = jest.fn(() => true);
+
+    const resNull = filter(null, predicate);
+    expect(resNull).toEqual([]);
+    expect(predicate).not.toHaveBeenCalled();
+
+    const resUndef = filter(undefined, predicate);
+    expect(resUndef).toEqual([]);
+    expect(predicate).not.toHaveBeenCalled();
+  });
+
+  test('works with sparse arrays (iterates by index/length)', () => {
+    // Create a sparse array: [ , 2, , 4 ]
+    const arr = [];
+    arr.length = 4;
+    arr[1] = 2;
+    arr[3] = 4;
+
+    const result = filter(arr, (value) => value != null);
+    expect(result).toEqual([2, 4]);
+  });
+
+  test('predicate truthiness: any truthy value should include element', () => {
+    const arr = [0, 1, 2, 3];
+    const result = filter(arr, (n) => (n % 2 ? 'yes' : 0)); // truthy/falsey
+    expect(result).toEqual([1, 3]);
+  });
+});
+
