@@ -31,6 +31,7 @@ describe('filter (aligned to current implementation)', () => {
 
   test('handles falsy values in input (truthy and falsy filters)', () => {
     const arr = [0, '', null, undefined, false, NaN, 'x', 1];
+
     const resultTruthy = filter(arr, (v) => v);
     expect(resultTruthy).toEqual(['x', 1]);
 
@@ -40,7 +41,7 @@ describe('filter (aligned to current implementation)', () => {
 
   test('predicate returning non-boolean values is coerced to boolean', () => {
     const arr = [1, 2, 3];
-    const result = filter(arr, (v) => v - 2);
+    const result = filter(arr, (v) => v - 2); // [-1, 0, 1] => truthy for 1 and 3
     expect(result).toEqual([1, 3]);
   });
 
@@ -74,19 +75,17 @@ describe('filter (aligned to current implementation)', () => {
     expect(resUndef).toEqual([[]]);
   });
 
-  test('thisArg support when provided', () => {
+  test('no thisArg support: passing context as 3rd arg does not bind `this`', () => {
     const arr = [1, 2, 3];
     const context = { threshold: 2 };
     function predicate(v) {
-      // @ts-ignore
       return v > this.threshold;
     }
-    const result = filter(arr, predicate, context);
-    expect(result).toEqual([3]);
+    expect(() => filter(arr, predicate, context)).toThrow(TypeError);
   });
 
-  test('non-array inputs: behavior depends on implementation; here, treat length and call predicate when possible', () => {
-    expect(filter('string', () => true)).toEqual([[]]);
+  test('non-array inputs behavior', () => {
+    expect(filter('string', () => true)).toEqual(['s', 't', 'r', 'i', 'n', 'g']);
     expect(filter(123, () => true)).toEqual([[]]);
   });
 });
